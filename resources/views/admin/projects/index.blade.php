@@ -1,0 +1,7 @@
+@extends('admin.layout')
+@section('title', 'Projects')
+@section('heading', 'Projects')
+@section('content')
+<div class="page-actions"><p class="muted">Create, edit, publish, or remove portfolio entries.</p><a class="btn btn-primary" href="{{ route('admin.projects.create') }}">+ Add project</a></div>
+<section class="panel">@if ($projects->isEmpty())<div class="empty-state"><span>▤</span><h3>Your work starts here.</h3><p>Add your first project. Drafts remain hidden from the public portfolio.</p></div>@else<div class="table-wrap"><table><thead><tr><th>Project</th><th>Category</th><th>Status</th><th>Order</th><th>Actions</th></tr></thead><tbody>@foreach ($projects as $project)<tr><td><strong>{{ $project->title }}</strong><small class="table-sub">{{ $project->description }}</small></td><td>{{ $project->category }}</td><td><span class="status-pill {{ $project->is_published ? 'published' : 'draft' }}">{{ $project->is_published ? 'Published' : 'Draft' }}</span></td><td>{{ $project->sort_order }}</td><td class="actions"><a class="inline-link" href="{{ route('admin.projects.edit', $project) }}">Edit</a><form method="POST" action="{{ route('admin.projects.destroy', $project) }}" onsubmit="return confirm('Delete this project?')">@csrf @method('DELETE')<button class="danger-link" type="submit">Delete</button></form></td></tr>@endforeach</tbody></table></div><div class="pagination">{{ $projects->links() }}</div>@endif</section>
+@endsection
