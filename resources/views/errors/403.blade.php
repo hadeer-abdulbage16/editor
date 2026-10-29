@@ -1,0 +1,3 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Access denied — MAH</title><link rel="stylesheet" href="{{ asset('css/admin.css') }}"></head>
+<body class="login-page"><main class="login-card"><p class="eyebrow">ERROR 403</p><h1>Access restricted.</h1><p class="muted">Your account is signed in, but it does not have permission to access this area.</p><a class="btn btn-primary" href="{{ route('admin.login') }}">Go to sign in ↗</a><a class="back-link" href="{{ route('portfolio.home') }}">← Back to portfolio</a></main></body></html>

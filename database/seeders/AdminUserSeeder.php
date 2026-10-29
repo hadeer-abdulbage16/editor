@@ -20,7 +20,11 @@ class AdminUserSeeder extends Seeder
 
         User::updateOrCreate(
             ['email' => $email],
-            ['name' => 'Portfolio Admin', 'password' => Hash::make($password)]
+            [
+                'name' => 'Portfolio Admin',
+                'password' => Hash::make($password),
+                'is_admin' => true,
+            ]
         );
     }
 }
