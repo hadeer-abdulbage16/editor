@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin Login — MAH</title><link rel="stylesheet" href="{{ asset('css/admin.css') }}"></head>
+<body class="login-page"><main class="login-card"><a class="admin-brand" href="{{ route('portfolio.home') }}">MAH<span>.</span> <small>PORTFOLIO ADMIN</small></a><p class="eyebrow">PRIVATE AREA</p><h1>Welcome back.</h1><p class="muted">Sign in to manage the portfolio.</p>
+@if ($errors->any())<div class="alert alert-error">{{ $errors->first() }}</div>@endif
+<form method="POST" action="{{ route('admin.login.store') }}">@csrf<label>Email address<input type="email" name="email" value="{{ old('email') }}" autocomplete="username" required autofocus></label><label>Password<input type="password" name="password" autocomplete="current-password" required></label><label class="remember"><input type="checkbox" name="remember" value="1"> Remember me</label><button class="btn btn-primary" type="submit">Sign in <span>↗</span></button></form><a class="back-link" href="{{ route('portfolio.home') }}">← Back to portfolio</a></main></body></html>
