@@ -1,0 +1,9 @@
+@extends('admin.layout')
+@section('title', 'Dashboard')
+@section('heading', 'Overview')
+@section('content')
+<div class="welcome-panel"><div><p class="eyebrow">YOUR CREATIVE SPACE</p><h2>Keep the story moving.</h2><p>Manage the work that appears on your public portfolio.</p></div><a class="btn btn-primary" href="{{ route('admin.projects.create') }}">+ Add a project</a></div>
+<div class="stats-grid"><article class="stat-card"><span>Total projects</span><strong>{{ $totalProjects }}</strong><small>All portfolio entries</small></article><article class="stat-card"><span>Published</span><strong>{{ $publishedProjects }}</strong><small>Visible on the website</small></article><article class="stat-card"><span>Drafts</span><strong>{{ $draftProjects }}</strong><small>Hidden from visitors</small></article></div>
+<section class="panel"><div class="panel-heading"><div><p class="eyebrow">CONTENT</p><h2>Recent projects</h2></div><a class="inline-link" href="{{ route('admin.projects.index') }}">Manage all ↗</a></div>
+@if ($recentProjects->isEmpty())<div class="empty-state"><span>▤</span><h3>No projects yet</h3><p>Create a project, add a video or thumbnail URL, and publish it when ready.</p><a class="btn btn-primary" href="{{ route('admin.projects.create') }}">Create first project</a></div>@else<div class="table-wrap"><table><thead><tr><th>Project</th><th>Category</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>@foreach ($recentProjects as $project)<tr><td><strong>{{ $project->title }}</strong></td><td>{{ $project->category }}</td><td><span class="status-pill {{ $project->is_published ? 'published' : 'draft' }}">{{ $project->is_published ? 'Published' : 'Draft' }}</span></td><td>{{ $project->updated_at->format('M d, Y') }}</td><td><a class="inline-link" href="{{ route('admin.projects.edit', $project) }}">Edit</a></td></tr>@endforeach</tbody></table></div>@endif</section>
+@endsection
