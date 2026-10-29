@@ -11,11 +11,13 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        $email = /*env('ADMIN_EMAIL')*/ "hadeerramadan415@gmail.com";
-        $password = /*env('ADMIN_PASSWORD')*/ "hadeer16@";
+        $email = env('ADMIN_EMAIL');
+        $password = env('ADMIN_PASSWORD');
 
-        if (! $email || ! $password || strlen($password) < 8) {
-            throw new RuntimeException('Set ADMIN_EMAIL and an ADMIN_PASSWORD of at least 8 characters in .env before running AdminUserSeeder.');
+        if (! $email || ! $password || strlen($password) < 12) {
+            throw new RuntimeException(
+                'Set ADMIN_EMAIL and a unique ADMIN_PASSWORD of at least 12 characters in .env before running AdminUserSeeder.'
+            );
         }
 
         User::updateOrCreate(
