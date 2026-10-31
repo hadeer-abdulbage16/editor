@@ -67,31 +67,30 @@ class ProjectController extends Controller
             'category' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'video_url' => ['nullable', 'url', 'max:2048'],
-            'thumbnail_url' => ['nullable', 'url', 'max:2048'],
-            'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'thumbnail_url' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'duration' => ['nullable', 'string', 'max:20'],
             'tone' => ['required', 'in:warm,violet,blue'],
             'sort_order' => ['required', 'integer', 'min:0', 'max:100000'],
             'is_published' => ['sometimes', 'boolean'],
         ], [
-            'thumbnail.image' => 'Please choose a valid image file.',
-            'thumbnail.mimes' => 'The thumbnail must be JPG, PNG, or WEBP.',
-            'thumbnail.max' => 'The thumbnail image must be 3 MB or smaller.',
+            'thumbnail_url.image' => 'Please choose a valid image file.',
+            'thumbnail_url.mimes' => 'The thumbnail must be JPG, PNG, or WEBP.',
+            'thumbnail_url.max' => 'The thumbnail image must be 3 MB or smaller.',
             'video_url.url' => 'Enter a full public video URL starting with https://, or leave this field empty.',
-            'thumbnail_url.url' => 'Enter a full image URL starting with https://, or leave this field empty.',
+            
         ]) + ['is_published' => $request->boolean('is_published')];
     }
 
     private function uploadThumbnail(Request $request): ?string
     {
-        if (!$request->hasFile('thumbnail')) {
+        if (!$request->hasFile('thumbnail_url')) {
             return null;
         }
 
         $directory = public_path('uploads/projects');
         File::ensureDirectoryExists($directory);
 
-        $file = $request->file('thumbnail');
+        $file = $request->file('thumbnail_url');
         $filename = Str::uuid()->toString() . '.' . $file->extension();
         $file->move($directory, $filename);
 
