@@ -35,14 +35,12 @@
             @error('description') <small class="field-error">{{ $message }}</small> @enderror
         </label>
         <label>Project thumbnail (from your device)
-            <input type="file" name="thumbnail" accept="image/jpeg,image/png,image/webp">
-            <small>Allowed: JPG, PNG, WEBP. Maximum size: 3 MB. Leave empty to keep the current image.</small>
+            <input type="file" name="thumbnail_url" accept="image/jpeg,image/png,image/webp">
+            <small>Select an image from your device. Allowed: JPG, PNG, WEBP. Maximum size: 3 MB. Leave empty to keep the current image.</small>
             @if ($project->thumbnail_path)
                 <img src="{{ asset($project->thumbnail_path) }}" alt="Current project thumbnail" style="display:block;max-width:220px;max-height:140px;object-fit:cover;margin-top:10px;border-radius:8px">
-            @elseif ($project->thumbnail_url)
-                <img src="{{ $project->thumbnail_url }}" alt="Current project thumbnail" style="display:block;max-width:220px;max-height:140px;object-fit:cover;margin-top:10px;border-radius:8px">
             @endif
-            @error('thumbnail') <small class="field-error">{{ $message }}</small> @enderror
+            @error('thumbnail_url') <small class="field-error">{{ $message }}</small> @enderror
         </label>
         <label>Video URL
             <input type="url" name="video_url" value="{{ old('video_url', $project->video_url) }}" placeholder="YouTube, Vimeo, or direct MP4 URL">
