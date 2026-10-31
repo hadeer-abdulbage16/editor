@@ -6,8 +6,9 @@ use App\\Http\\Controllers\\Controller;
 use App\\Models\\PortfolioProject;
 use Illuminate\\Http\\RedirectResponse;
 use Illuminate\\Http\\Request;
+use Illuminate\\Support\\Facades\\File;
+use Illuminate\\Support\\Str;
 use Illuminate\\View\\View;
-use Illuminate\\Validation\\ValidationException;
 
 class ProjectController extends Controller
 {
@@ -23,7 +24,10 @@ class ProjectController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        PortfolioProject::create($this->validated($request));
+        $data = $this->validated($request);
+        $data['thumbnail_path'] = $this->uploadThumbnail($request);
+
+        PortfolioProject::create($data);
 
         return redirect()->route('admin.projects.index')->with('status', 'Project created successfully.');
     }
@@ -35,13 +39,22 @@ class ProjectController extends Controller
 
     public function update(Request $request, PortfolioProject $project): RedirectResponse
     {
-        $project->update($this->validated($request));
+        $data = $this->validated($request);
+        $newThumbnail = $this->uploadThumbnail($request);
+
+        if ($newThumbnail) {
+            $this->deleteThumbnail($project->thumbnail_path);
+            $data['thumbnail_path'] = $newThumbnail;
+        }
+
+        $project->update($data);
 
         return redirect()->route('admin.projects.index')->with('status', 'Project updated successfully.');
     }
 
     public function destroy(PortfolioProject $project): RedirectResponse
     {
+        $this->deleteThumbnail($project->thumbnail_path);
         $project->delete();
 
         return redirect()->route('admin.projects.index')->with('status', 'Project deleted.');
@@ -55,19 +68,45 @@ class ProjectController extends Controller
             'description' => ['nullable', 'string', 'max:2000'],
             'video_url' => ['nullable', 'url', 'max:2048'],
             'thumbnail_url' => ['nullable', 'url', 'max:2048'],
+            'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'duration' => ['nullable', 'string', 'max:20'],
             'tone' => ['required', 'in:warm,violet,blue'],
             'sort_order' => ['required', 'integer', 'min:0', 'max:100000'],
             'is_published' => ['sometimes', 'boolean'],
         ], [
-            'title.required' => 'Please enter the project title.',
-            'category.required' => 'Please enter a project category.',
-            'video_url.url' => 'Enter a complete video URL starting with https://, or leave this field empty.',
-            'thumbnail_url.url' => 'Enter a complete image URL starting with https://, or leave this field empty.',
-            'tone.in' => 'Please select a visual style.',
-            'sort_order.required' => 'Please enter the sort order.',
-            'sort_order.integer' => 'Sort order must be a whole number.',
-            'sort_order.min' => 'Sort order cannot be negative.',
+            'thumbnail.image' => 'Please choose a valid image file.',
+            'thumbnail.mimes' => 'The thumbnail must be JPG, PNG, or WEBP.',
+            'thumbnail.max' => 'The thumbnail image must be 3 MB or smaller.',
+            'video_url.url' => 'Enter a full public video URL starting with https://, or leave this field empty.',
+            'thumbnail_url.url' => 'Enter a full image URL starting with https://, or leave this field empty.',
         ]) + ['is_published' => $request->boolean('is_published')];
+    }
+
+    private function uploadThumbnail(Request $request): ?string
+    {
+        if (!$request->hasFile('thumbnail')) {
+            return null;
+        }
+
+        $directory = public_path('uploads/projects');
+        File::ensureDirectoryExists($directory);
+
+        $file = $request->file('thumbnail');
+        $filename = Str::uuid()->toString() . '.' . $file->extension();
+        $file->move($directory, $filename);
+
+        return 'uploads/projects/' . $filename;
+    }
+
+    private function deleteThumbnail(?string $path): void
+    {
+        if (!$path || !str_starts_with($path, 'uploads/projects/')) {
+            return;
+        }
+
+        $fullPath = public_path($path);
+        if (is_file($fullPath)) {
+            @unlink($fullPath);
+        }
     }
 }
