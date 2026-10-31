@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\\Http\\Controllers\\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\PortfolioProject;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\\Http\\Controllers\\Controller;
+use App\\Models\\PortfolioProject;
+use Illuminate\\Http\\RedirectResponse;
+use Illuminate\\Http\\Request;
+use Illuminate\\View\\View;
+use Illuminate\\Validation\\ValidationException;
 
 class ProjectController extends Controller
 {
@@ -57,7 +58,16 @@ class ProjectController extends Controller
             'duration' => ['nullable', 'string', 'max:20'],
             'tone' => ['required', 'in:warm,violet,blue'],
             'sort_order' => ['required', 'integer', 'min:0', 'max:100000'],
-            'is_published' => ['nullable', 'boolean'],
+            'is_published' => ['sometimes', 'boolean'],
+        ], [
+            'title.required' => 'Please enter the project title.',
+            'category.required' => 'Please enter a project category.',
+            'video_url.url' => 'Enter a complete video URL starting with https://, or leave this field empty.',
+            'thumbnail_url.url' => 'Enter a complete image URL starting with https://, or leave this field empty.',
+            'tone.in' => 'Please select a visual style.',
+            'sort_order.required' => 'Please enter the sort order.',
+            'sort_order.integer' => 'Sort order must be a whole number.',
+            'sort_order.min' => 'Sort order cannot be negative.',
         ]) + ['is_published' => $request->boolean('is_published')];
     }
 }
