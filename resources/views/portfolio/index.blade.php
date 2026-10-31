@@ -29,32 +29,105 @@
 @forelse ($projects as $index => $project)
 @php
     $videoUrl = $project->video_url;
-    $videoHost = $videoUrl ? parse_url($videoUrl, PHP_URL_HOST) : null;
-    $isDirectVideo = $videoUrl && preg_match('/\\.(mp4|webm|ogg)(?:\\?.*)?$/i', $videoUrl);
-    $thumbnail = $project->thumbnail_path ? asset($project->thumbnail_path) : $project->thumbnail_url;
+    $thumbnail = $project->thumbnail_path ? asset($project->thumbnail_path) : null;
+    $embedUrl = null;
+    if ($videoUrl) {
+        $host = strtolower(parse_url($videoUrl, PHP_URL_HOST) ?? '');
+        $path = parse_url($videoUrl, PHP_URL_PATH) ?? '';
+        $query = [];
+        parse_str(parse_url($videoUrl, PHP_URL_QUERY) ?? '', $query);
+        if (str_contains($host, 'youtu.be')) {
+            $id = trim($path, '/');
+            if ($id !== '') $embedUrl = 'https://www.youtube-nocookie.com/embed/' . $id;
+        } elseif (str_contains($host, 'youtube.com')) {
+            $id = $query['v'] ?? (preg_match('~/(?:embed|shorts)/([^/?]+)~', $path, $matches) ? $matches[1] : null);
+            if ($id) $embedUrl = 'https://www.youtube-nocookie.com/embed/' . $id;
+        } elseif (str_contains($host, 'vimeo.com')) {
+            if (preg_match('~/(?:video/)?(\\d+)~', $path, $matches)) $embedUrl = 'https://player.vimeo.com/video/' . $matches[1];
+        }
+        $isDirectVideo = preg_match('/\\.(mp4|webm|ogg)(?:\\?.*)?$/i', $videoUrl) === 1;
+    } else {
+        $isDirectVideo = false;
+    }
 @endphp
 <article class="project-card">
-    @if ($videoUrl)
-        <a class="project-visual visual-{{ $project->tone }}" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Watch {{ $project->title }}">
-    @else
-        <div class="project-visual visual-{{ $project->tone }}">
-    @endif
+    <div class="project-visual visual-{{ $project->tone }}">
         @if ($thumbnail)
             <img src="{{ $thumbnail }}" alt="{{ $project->title }} thumbnail" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
         @else
             <span class="visual-sun"></span><span class="visual-orbit"></span><span class="visual-graphic-word">{{ $project->tone === 'warm' ? 'STORY' : ($project->tone === 'violet' ? 'PULSE' : 'TYPE') }}</span>
         @endif
         <span class="project-number">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }} / {{ str_pad((string) $projects->count(), 2, '0', STR_PAD_LEFT) }}</span>
-        @if ($videoUrl)<span class="play-button" aria-hidden="true">▶</span><span class="demo-label">WATCH PROJECT ↗</span>@else<span class="demo-label">VIDEO COMING SOON</span>@endif
+        @if ($embedUrl || $isDirectVideo)
+            <button class="play-button" type="button" data-video-open data-video-url="{{ $embedUrl ?: $videoUrl }}" data-video-type="{{ $isDirectVideo ? 'direct' : 'embed' }}" data-video-title="{{ $project->title }}" aria-label="Play {{ $project->title }}">▶</button>
+            <span class="demo-label">WATCH PROJECT</span>
+        @elseif ($videoUrl)
+            <a class="play-button" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Open {{ $project->title }}">↗</a>
+            <span class="demo-label">WATCH PROJECT ↗</span>
+        @else
+            <span class="demo-label">VIDEO COMING SOON</span>
+        @endif
         @if ($project->duration)<span class="project-duration">{{ $project->duration }}</span>@endif
-    @if ($videoUrl)</a>@else</div>@endif
-    <div class="project-info"><div><p class="project-category">{{ $project->category }}</p><h3>{{ $project->title }}</h3></div>@if ($videoUrl)<a class="project-arrow" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Watch {{ $project->title }}">↗</a>@endif</div>
+    </div>
+    <div class="project-info"><div><p class="project-category">{{ $project->category }}</p><h3>{{ $project->title }}</h3></div>
+        @if ($videoUrl)<a class="project-arrow" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Open {{ $project->title }}">↗</a>@endif
+    </div>
     @if ($project->description)<p class="project-description">{{ $project->description }}</p>@endif
 </article>
 @empty
 <p class="section-intro">Projects are being prepared. Please check back soon.</p>
 @endforelse
-</div></section>
+</div>
+<div class="video-modal" data-video-modal aria-hidden="true" style="display:none;position:fixed;inset:0;z-index:9999;background:#000e;align-items:center;justify-content:center;padding:24px">
+    <div style="position:relative;width:min(100%,1000px);background:#111;padding:12px;border:1px solid #444">
+        <button type="button" data-video-close aria-label="Close video" style="position:absolute;right:8px;top:8px;z-index:2;background:#d9fb62;color:#111;border:0;padding:8px 12px;cursor:pointer">CLOSE ✕</button>
+        <div data-video-stage style="aspect-ratio:16/9"></div>
+        <p data-video-title style="margin:8px 0 0"></p>
+    </div>
+</div>
+<script>
+(() => {
+    const modal = document.querySelector('[data-video-modal]');
+    if (!modal) return;
+    const stage = modal.querySelector('[data-video-stage]');
+    const title = modal.querySelector('[data-video-title]');
+    const close = () => {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        stage.replaceChildren();
+        document.body.style.overflow = '';
+    };
+    document.querySelectorAll('[data-video-open]').forEach(button => button.addEventListener('click', () => {
+        const url = button.dataset.videoUrl;
+        const label = button.dataset.videoTitle || 'Project video';
+        title.textContent = label;
+        if (button.dataset.videoType === 'direct') {
+            const video = document.createElement('video');
+            video.src = url;
+            video.controls = true;
+            video.autoplay = true;
+            video.playsInline = true;
+            video.style.cssText = 'width:100%;height:100%;background:#000';
+            stage.append(video);
+        } else {
+            const frame = document.createElement('iframe');
+            frame.src = url + (url.includes('?') ? '&' : '?') + 'autoplay=1';
+            frame.title = label;
+            frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+            frame.allowFullscreen = true;
+            frame.style.cssText = 'width:100%;height:100%;border:0';
+            stage.append(frame);
+        }
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }));
+    modal.querySelector('[data-video-close]').addEventListener('click', close);
+    modal.addEventListener('click', event => { if (event.target === modal) close(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && modal.style.display === 'flex') close(); });
+})();
+</script>
+</section>
 <section id="approach" class="approach-section"><div class="section-wrap approach-grid"><div><p class="eyebrow">02 / THE APPROACH</p><h2>Good edits<br>are <span class="accent">felt.</span></h2></div><div class="approach-content"><p class="approach-lead">Every cut has a job. Every frame should move the story forward.</p><p class="approach-body">From the first assembly to the final export, the focus stays on clarity, rhythm, and the emotion behind the footage. The goal is not to add more — it is to make every choice count.</p>
 <div class="skills-grid"><div class="skill"><span>01</span><div><h3>Editing & pacing</h3><p>Structure, timing, transitions, and story flow.</p></div></div><div class="skill"><span>02</span><div><h3>Color & atmosphere</h3><p>Consistent color, contrast, and visual mood.</p></div></div><div class="skill"><span>03</span><div><h3>Sound & polish</h3><p>Audio balance, music timing, and clean finishing.</p></div></div><div class="skill"><span>04</span><div><h3>Motion & titles</h3><p>Typography, simple motion graphics, and visual accents.</p></div></div></div></div></div></section>
 <section class="tool-section section-wrap"><div class="tool-heading"><p class="eyebrow">03 / WORKFLOW</p><h2>The tools behind<br><span class="muted">the timeline.</span></h2></div><div class="tools-list"><div class="tool-row"><span class="tool-index">01</span><span class="tool-name">Adobe Premiere Pro</span><span class="tool-type">VIDEO EDITING</span><span class="tool-symbol">↗</span></div><div class="tool-row"><span class="tool-index">02</span><span class="tool-name">DaVinci Resolve</span><span class="tool-type">EDIT / COLOR</span><span class="tool-symbol">↗</span></div><div class="tool-row"><span class="tool-index">03</span><span class="tool-name">Adobe After Effects</span><span class="tool-type">MOTION GRAPHICS</span><span class="tool-symbol">↗</span></div></div><p class="tool-footnote">Adjust this list to reflect the exact software and workflows used.</p></section>
