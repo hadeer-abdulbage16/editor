@@ -26,11 +26,35 @@
 <section class="ticker"><div class="ticker-track"><span>VIDEO EDITING</span><b>✳</b><span>COLOR & MOOD</span><b>✳</b><span>MOTION GRAPHICS</span><b>✳</b><span>SHORT-FORM CONTENT</span><b>✳</b><span>VIDEO EDITING</span><b>✳</b><span>COLOR & MOOD</span><b>✳</b></div></section>
 <section id="work" class="work-section section-wrap"><div class="section-heading"><div><p class="eyebrow">01 / SELECTED WORK</p><h2>Frames that<br><span class="muted">say something.</span></h2></div><p class="section-intro">A space for visual experiments and editing demos. These are clearly marked placeholders — real client and personal projects can be added here later.</p></div>
 <div class="project-grid">
-@foreach ($projects as $index => $project)
-<article class="project-card"><button class="project-visual visual-{{ $project->tone }}" type="button" data-demo-open data-title="{{ $project->title }}" aria-label="Open demo details for {{ $project['title'] }}"><span class="project-number">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }} / 03</span><span class="visual-sun"></span><span class="visual-orbit"></span><span class="visual-graphic-word">{{ $project['tone'] === 'warm' ? 'STORY' : ($project['tone'] === 'violet' ? 'PULSE' : 'TYPE') }}</span><span class="play-button" aria-hidden="true">▶</span><span class="demo-label">DEMO · PLACEHOLDER</span><span class="project-duration">{{ $project->duration }}</span></button>
-<div class="project-info"><div><p class="project-category">{{ $project->category }}</p><h3>{{ $project['title'] }}</h3></div><span class="project-arrow">↗</span></div><p class="project-description">{{ $project->description }}</p></article>
-@endforeach
-</div><p class="demo-note"><span>ⓘ</span> Demo concepts only. Replace these cards with approved videos before presenting them as completed work.</p></section>
+@forelse ($projects as $index => $project)
+@php
+    $videoUrl = $project->video_url;
+    $videoHost = $videoUrl ? parse_url($videoUrl, PHP_URL_HOST) : null;
+    $isDirectVideo = $videoUrl && preg_match('/\\.(mp4|webm|ogg)(?:\\?.*)?$/i', $videoUrl);
+    $thumbnail = $project->thumbnail_path ? asset($project->thumbnail_path) : $project->thumbnail_url;
+@endphp
+<article class="project-card">
+    @if ($videoUrl)
+        <a class="project-visual visual-{{ $project->tone }}" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Watch {{ $project->title }}">
+    @else
+        <div class="project-visual visual-{{ $project->tone }}">
+    @endif
+        @if ($thumbnail)
+            <img src="{{ $thumbnail }}" alt="{{ $project->title }} thumbnail" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+        @else
+            <span class="visual-sun"></span><span class="visual-orbit"></span><span class="visual-graphic-word">{{ $project->tone === 'warm' ? 'STORY' : ($project->tone === 'violet' ? 'PULSE' : 'TYPE') }}</span>
+        @endif
+        <span class="project-number">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }} / {{ str_pad((string) $projects->count(), 2, '0', STR_PAD_LEFT) }}</span>
+        @if ($videoUrl)<span class="play-button" aria-hidden="true">▶</span><span class="demo-label">WATCH PROJECT ↗</span>@else<span class="demo-label">VIDEO COMING SOON</span>@endif
+        @if ($project->duration)<span class="project-duration">{{ $project->duration }}</span>@endif
+    @if ($videoUrl)</a>@else</div>@endif
+    <div class="project-info"><div><p class="project-category">{{ $project->category }}</p><h3>{{ $project->title }}</h3></div>@if ($videoUrl)<a class="project-arrow" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Watch {{ $project->title }}">↗</a>@endif</div>
+    @if ($project->description)<p class="project-description">{{ $project->description }}</p>@endif
+</article>
+@empty
+<p class="section-intro">Projects are being prepared. Please check back soon.</p>
+@endforelse
+</div></section>
 <section id="approach" class="approach-section"><div class="section-wrap approach-grid"><div><p class="eyebrow">02 / THE APPROACH</p><h2>Good edits<br>are <span class="accent">felt.</span></h2></div><div class="approach-content"><p class="approach-lead">Every cut has a job. Every frame should move the story forward.</p><p class="approach-body">From the first assembly to the final export, the focus stays on clarity, rhythm, and the emotion behind the footage. The goal is not to add more — it is to make every choice count.</p>
 <div class="skills-grid"><div class="skill"><span>01</span><div><h3>Editing & pacing</h3><p>Structure, timing, transitions, and story flow.</p></div></div><div class="skill"><span>02</span><div><h3>Color & atmosphere</h3><p>Consistent color, contrast, and visual mood.</p></div></div><div class="skill"><span>03</span><div><h3>Sound & polish</h3><p>Audio balance, music timing, and clean finishing.</p></div></div><div class="skill"><span>04</span><div><h3>Motion & titles</h3><p>Typography, simple motion graphics, and visual accents.</p></div></div></div></div></div></section>
 <section class="tool-section section-wrap"><div class="tool-heading"><p class="eyebrow">03 / WORKFLOW</p><h2>The tools behind<br><span class="muted">the timeline.</span></h2></div><div class="tools-list"><div class="tool-row"><span class="tool-index">01</span><span class="tool-name">Adobe Premiere Pro</span><span class="tool-type">VIDEO EDITING</span><span class="tool-symbol">↗</span></div><div class="tool-row"><span class="tool-index">02</span><span class="tool-name">DaVinci Resolve</span><span class="tool-type">EDIT / COLOR</span><span class="tool-symbol">↗</span></div><div class="tool-row"><span class="tool-index">03</span><span class="tool-name">Adobe After Effects</span><span class="tool-type">MOTION GRAPHICS</span><span class="tool-symbol">↗</span></div></div><p class="tool-footnote">Adjust this list to reflect the exact software and workflows used.</p></section>
