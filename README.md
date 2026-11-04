@@ -1,74 +1,98 @@
 # Video Editor Portfolio — Laravel 12
 
-Responsive English-language portfolio and content-management dashboard for Mohamed Ahmed Abu El-Hagag.
+Responsive English-language portfolio and admin dashboard for Mohamed Ahmed Abu El-Hagag.
 
 ## Features
-- Responsive public portfolio page
-- Admin login using Laravel session authentication and CSRF protection
-- Signup with validation and password confirmation
-- Admin-only dashboard and project management (public signups do not receive admin privileges)
-- Unauthenticated visitors are redirected to the admin login page when opening protected admin URLs
+- Responsive public portfolio
+- Admin authentication and protected dashboard
+- Project CRUD with title, category, description, duration, video URL, uploaded thumbnail, publish status, and sort order
+- YouTube, Google Drive, Vimeo, and direct video links on the public portfolio
+- Uploaded project thumbnails saved under `public/uploads/projects`; their relative paths are stored in the database
 - Custom 403, 404, and 500 error pages
-- Protected dashboard with project totals, published items, and drafts
-- Full project CRUD: create, edit, publish, and delete
-- Login and signup rate limits
-- Demo project cards are explicitly described as placeholders, not real client work
 
 ## Requirements
 - PHP 8.2+
 - Composer
-- A configured Laravel-supported database
+- XAMPP (Apache + MySQL) or another local PHP/MySQL environment
 
-## Setup
-1. Install dependencies:
-   ```bash
-   composer install
-   ```
-2. Create your environment file and app key:
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-3. Configure database credentials in `.env`.
-4. Add an admin login to `.env` (choose your own strong password; do not commit secrets):
-   ```dotenv
-   ADMIN_EMAIL=admin@example.com
-   ADMIN_PASSWORD=replace-with-a-unique-password-of-at-least-12-characters
-   ```
-5. Run migrations and seed initial demo cards plus the admin user:
-   ```bash
-   php artisan migrate --seed
-   ```
-6. Start the development server:
-   ```bash
-   php artisan serve
-   ```
+## Run locally on Windows / XAMPP
 
-## URLs
-- `/` — public portfolio
-- `/admin/login` — sign in
-- `/admin/signup` — create a regular account
-- `/admin` — admin dashboard (admin login required)
-- `/admin/projects` — manage projects (admin login required)
+The project folder used for local development is:
 
-**Security note:** Public signup creates a regular account only. It does not grant admin access. The configured account created by `AdminUserSeeder` receives admin privileges. Existing installations must run `php artisan migrate --seed` after pulling these changes so the `is_admin` column is added and the configured admin account is marked as an administrator. This command preserves existing rows; do not use `migrate:fresh` unless you intend to delete all tables and data.
+```text
+C:\xampp\htdocs\editor
+```
 
-## Replace demo content
-The initial projects are illustrative demo placeholders. Replace their descriptions, video URLs, thumbnails, and visual treatments with approved work before presenting them as completed client projects.
+### 1. Start services and create the database
+1. Open XAMPP Control Panel.
+2. Start **Apache** and **MySQL**.
+3. Open `http://localhost/phpmyadmin`.
+4. Create a database named **editor** using `utf8mb4_unicode_ci` collation.
 
-## Contact data
-The public email and phone are sourced from the supplied CV. No extra social accounts or employment history have been invented.
+### 2. Configure Laravel
+Open a terminal in `C:\xampp\htdocs\editor` and run:
 
-## Main structure
-- `routes/web.php` — public and protected admin routes
-- `bootstrap/app.php` — guest redirect and middleware alias configuration
-- `app/Http/Controllers/PortfolioController.php` — public page data
-- `app/Http/Controllers/Admin` — authentication, dashboard, and project management
-- `app/Http/Middleware/EnsureUserIsAdmin.php` — admin-only access
-- `database/migrations` — database schema
-- `database/seeders` — admin account and clearly labelled demo cards
-- `resources/views/admin` — dashboard, login, signup, and project forms
-- `resources/views/errors` — custom error pages
-- `public/css` — public and admin styling
+```bash
+composer install
+```
 
-> The code has been committed to GitHub but has not been run through a local Laravel installation or automated test suite. Verify it locally before production deployment.
+Copy `.env.example` to `.env` (on Windows CMD: `copy .env.example .env`). The local MySQL settings should be:
+
+```dotenv
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=editor
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+If your MySQL root account has a password, enter it as `DB_PASSWORD`.
+
+Set a private admin account in `.env`. Choose your own password; do not commit the `.env` file:
+
+```dotenv
+ADMIN_EMAIL=your-admin-email@example.com
+ADMIN_PASSWORD=your-strong-password-at-least-12-characters
+```
+
+Generate the application key:
+
+```bash
+php artisan key:generate
+```
+
+### 3. Create/update tables and seed the admin
+Run:
+
+```bash
+php artisan migrate --seed
+```
+
+This runs all outstanding migrations and seeds the configured admin account plus the initial demo projects. It does **not** delete existing data. Do not use `migrate:fresh` on a database containing projects you want to keep.
+
+### 4. Run the website
+For the simplest local setup, run:
+
+```bash
+php artisan serve
+```
+
+Open:
+
+- Public portfolio: `http://127.0.0.1:8000`
+- Admin login: `http://127.0.0.1:8000/admin/login`
+- Admin dashboard: `http://127.0.0.1:8000/admin`
+
+### 5. Uploaded thumbnails
+The application stores uploaded image files in `public/uploads/projects` and stores their relative paths in `portfolio_projects.thumbnail_path`. Ensure this directory is writable by PHP. Accepted formats: JPG, JPEG, PNG, WEBP; maximum 3 MB.
+
+## Production deployment
+Use production environment values, set `APP_DEBUG=false`, configure the production database and a strong private admin password, and ensure the uploads directory is writable. Never upload the local `.env` file or commit secrets.
+
+## Security
+Public signup creates a regular user only. The configured account created by `AdminUserSeeder` receives admin privileges. Never expose the admin password in source control.
