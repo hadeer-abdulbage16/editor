@@ -24,7 +24,7 @@
 <div class="art-bottom"><span>STORY FIRST. ALWAYS.</span><span>◉ 01:24:16</span></div></div><div class="hero-index"><span>01</span><span class="index-line"></span><span>INTRO</span></div>
 </section>
 <section class="ticker"><div class="ticker-track"><span>VIDEO EDITING</span><b>✳</b><span>COLOR & MOOD</span><b>✳</b><span>MOTION GRAPHICS</span><b>✳</b><span>SHORT-FORM CONTENT</span><b>✳</b><span>VIDEO EDITING</span><b>✳</b><span>COLOR & MOOD</span><b>✳</b></div></section>
-<section id="work" class="work-section section-wrap"><div class="section-heading"><div><p class="eyebrow">01 / SELECTED WORK</p><h2>Frames that<br><span class="muted">say something.</span></h2></div><p class="section-intro">A space for visual experiments and editing demos. These are clearly marked placeholders — real client and personal projects can be added here later.</p></div>
+<section id="work" class="work-section section-wrap"><div class="section-heading"><div><p class="eyebrow">01 / SELECTED WORK</p><h2>Frames that<br><span class="muted">say something.</span></h2></div><p class="section-intro">Projects selected and uploaded by the editor.</p></div>
 <div class="project-grid">
 @forelse ($projects as $index => $project)
 @php
@@ -42,6 +42,8 @@
         } elseif (str_contains($host, 'youtube.com')) {
             $id = $query['v'] ?? (preg_match('~/(?:embed|shorts)/([^/?]+)~', $path, $matches) ? $matches[1] : null);
             if ($id) $embedUrl = 'https://www.youtube-nocookie.com/embed/' . $id;
+        } elseif (str_contains($host, 'drive.google.com')) {
+            if (preg_match('~/(?:file/d|open\\?id=)([a-zA-Z0-9_-]+)~', $videoUrl, $matches)) $embedUrl = 'https://drive.google.com/file/d/' . $matches[1] . '/preview';
         } elseif (str_contains($host, 'vimeo.com')) {
             if (preg_match('~/(?:video/)?(\\d+)~', $path, $matches)) $embedUrl = 'https://player.vimeo.com/video/' . $matches[1];
         }
