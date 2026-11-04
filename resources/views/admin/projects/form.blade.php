@@ -43,14 +43,9 @@
             @error('thumbnail_url') <small class="field-error">{{ $message }}</small> @enderror
         </label>
         <label>Video URL
-            <input type="url" name="video_url" value="{{ old('video_url', $project->video_url) }}" placeholder="YouTube, Vimeo, or direct MP4 URL">
-            <small>Use a public YouTube/Vimeo link or a direct .mp4 link. The video must allow embedding/public viewing.</small>
+            <input type="url" name="video_url" value="{{ old('video_url', $project->video_url) }}" placeholder="YouTube, Google Drive, Vimeo, or direct MP4 URL">
+            <small>Paste a shareable YouTube or Google Drive link, Vimeo link, or direct MP4 URL. For Google Drive, set General access to Anyone with the link.</small>
             @error('video_url') <small class="field-error">{{ $message }}</small> @enderror
-        </label>
-        <label>Thumbnail URL (optional fallback)
-            <input type="url" name="thumbnail_url" value="{{ old('thumbnail_url', $project->thumbnail_url) }}" placeholder="https://…">
-            <small>Optional; the uploaded image above takes priority.</small>
-            @error('thumbnail_url') <small class="field-error">{{ $message }}</small> @enderror
         </label>
         <div class="form-two">
             <label>Visual style
